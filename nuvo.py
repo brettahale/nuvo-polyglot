@@ -1,8 +1,3 @@
-#!/usr/bin/python
-""" Sonos Node Server for Polyglot 
-      by Einstein.42(James Milne)
-      milne.james@gmail.com"""
-
 from polyglot.nodeserver_api import SimpleNodeServer, PolyglotConnector
 from nuvo_nodes import NuvoMain
 
