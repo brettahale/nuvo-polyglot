@@ -1,0 +1,10 @@
+{
+  "name": "Nuvo Polyglot",
+  "docs": "http://www.layerspark.com/nuvo-polyglot",
+  "type": "python",
+  "executable": "nuvo.py",
+  "configfile": "config.yaml",
+  "description": "Connect Nuvo Audio Controller to the ISY994.",
+  "notice": "Use at your own risk -- consider this experimental",
+  "credits": []
+}

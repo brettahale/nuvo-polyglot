@@ -1,0 +1,37 @@
+# Nuvo Main
+ND-NVCTRL-NAME = Nuvo Controller
+CMD-NVC-ALLOFF-NAME = All Off
+
+# Nuvo Zones
+ND-NVZONE-NAME = Nuvo Zone
+CMD-NVZONE-VOLUME-NAME = Volume
+
+NVZ_SRC-1 = Source 1
+NVZ_SRC-2 = Source 2
+NVZ_SRC-3 = Source 3
+NVZ_SRC-4 = Source 4
+NVZ_SRC-5 = Source 5
+NVZ_SRC-6 = Source 6
+
+NVZ_GRP-1 = Group 1
+NVZ_GRP-2 = Group 2
+NVZ_GRP-3 = Group 3
+NVZ_GRP-4 = Group 4
+NVZ_GRP-5 = Group 5
+NVZ_GRP-6 = Group 6
+
+CMD-SET_GRP-NAME = Group
+CMD-SET_MT-NAME = Mute
+CMD-SET_SRC-NAME = Source
+CMD-SET_VOL-NAME = Volume
+
+ST-NVZ-ST-NAME = Status
+ST-NVZ-GV1-NAME = Group
+ST-NVZ-GV2-NAME = Mute
+ST-NVZ-GV3-NAME = Source
+ST-NVZ-GV4-NAME = Volume
+
+NVZ_ST-0 = Off
+NVZ_ST-1 = On
+NVZ_MT-0 = Off
+NVZ_MT-1 = On
