@@ -1,3 +1,5 @@
+# Credit for Dockerfile -- http://forum.universal-devices.com/topic/19807-polyglot-docker-image/
+
 FROM fnphat/rpi-alpine-python:2.7
 
 ARG binfile=polyglot.linux.armv7l.pyz
