@@ -1,21 +1,22 @@
 <nodeDefs>
     <!-- Nuvo Main -->
-    <nodeDef id="NVCTRL" nls="NVC">
+    <nodeDef id="nuvoe6dms" nls="NVC">
         <editors />
         <sts />
         <cmds>
             <sends />
             <accepts>
                 <cmd id="ALLOFF"/>
+                <cmd id="ALLON"/>
             </accepts>
         </cmds>
     </nodeDef>
-    <nodeDef id="NVZONE" nls="NVZ">
+    <nodeDef id="nuvozone" nls="NVZ">
         <editors />
         <sts>
-            <st id="ST" editor="NVZ_ST" />
+            <st id="ST" editor="BOOL" />
             <st id="GV1" editor="NVZ_GRP" />
-            <st id="GV2" editor="NVZ_MT" />
+            <st id="GV2" editor="BOOL" />
             <st id="GV3" editor="NVZ_SRC" />
             <st id="GV4" editor="NVZ_VOL" />
         </sts>
@@ -27,14 +28,14 @@
                 <cmd id="SET_GRP">
                     <p id="" editor="NVZ_GRP" optional="T" init="GV1" />
                 </cmd>
-                <cmd id="SET_VOL">
-                    <p id="" editor="NVZ_VOL" optional="T" init="GV4" />
+                <cmd id="SET_MT">
+                    <p id="" editor="BOOL" optional="T" init="GV2" />
                 </cmd>
                 <cmd id="SET_SRC">
                     <p id="" editor="NVZ_SRC" optional="T" init="GV3" />
                 </cmd>
-                <cmd id="SET_MT">
-                    <p id="" editor="NVZ_MT" optional="T" init="GV2" />
+                <cmd id="SET_VOL">
+                    <p id="" editor="NVZ_VOL" optional="T" init="GV4" />
                 </cmd>
 
             </accepts>

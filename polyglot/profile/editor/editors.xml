@@ -1,6 +1,6 @@
 <editors>
-    <editor id="NVZ_ST">
-        <range uom="25" subset="0-1" nls="NVZ_ST" />
+    <editor id="BOOL">
+        <range uom="2" subset="0,1" nls="NVZ_BOOL"/>
     </editor>
     <editor id="NVZ_VOL">
         <range uom="51" min="0" max="100" prec="0" step="5"/>
@@ -9,9 +9,7 @@
         <range uom="25" subset="1-6" nls="NVZ_SRC"/>
     </editor>
     <editor id="NVZ_GRP">
-        <range uom="25" subset="1-6" nls="NVZ_GRP"/>
+        <range uom="25" subset="0-6" nls="NVZ_GRP"/>
     </editor>
-    <editor id="NVZ_MT">
-        <range uom="25" subset="0,1" nls="NVZ_MT" />
-    </editor>
+
 </editors>

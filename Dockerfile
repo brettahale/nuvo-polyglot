@@ -1,31 +1,37 @@
-# Credit for Dockerfile -- http://forum.universal-devices.com/topic/19807-polyglot-docker-image/
+FROM node:10-alpine
 
-FROM fnphat/rpi-alpine-python:2.7
+EXPOSE 3000
 
-ARG binfile=polyglot.linux.armv7l.pyz
-ARG user=polyglot
-ARG group=polyglot
-ARG uid=1000
-ARG gid=1000
+WORKDIR /opt/polyglot-v2/
+RUN apk add --no-cache --virtual .build-deps linux-headers build-base && \
+    apk add --no-cache python3 python3-dev py3-pip bash git ca-certificates wget tzdata openssl zip && \
+    python3 -m ensurepip && \
+    rm -r /usr/lib/python*/ensurepip && \
+    pip3 install --upgrade pip setuptools && \
+    if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi && \
+    rm -r /root/.cache && \
+    cd /opt && \
+    git clone --depth=1 --single-branch --branch master https://github.com/UniversalDevicesInc/polyglot-v2.git && \
+    cd /opt/polyglot-v2 && \
+    npm install && \
+    apk del .build-deps
 
-RUN addgroup -g ${gid} ${group} \
-        && adduser -h /home/${user} -s /bin/sh -G ${group} -D -u ${uid} ${user}
+RUN addgroup -S polyglot && adduser -S -G polyglot polyglot
 
-WORKDIR /home/${user}
-COPY custom.txt .
+USER polyglot
+WORKDIR /home/polyglot
 
-RUN apk add --update \
-        zip build-base python-dev linux-headers git ca-certificates wget openssl-dev \
-        && rm -rf /var/cache/apk/*
+RUN mkdir -p /home/polyglot/.polyglot/nodeservers/nuvo-polyglot/profile
+COPY ./src/nuvo_polyglot/*.py .polyglot/nodeservers/nuvo-polyglot/
+COPY ./polyglot/profile .polyglot/nodeservers/nuvo-polyglot/profile/
+COPY ./polyglot/install.sh .polyglot/nodeservers/nuvo-polyglot/
+COPY ./polyglot/server.json .polyglot/nodeservers/nuvo-polyglot/
+COPY ./polyglot/dot-env.template .polyglot/.env
 
-RUN pip install --upgrade pip \
-    && pip install -r https://raw.githubusercontent.com/UniversalDevicesInc/Polyglot/unstable-release/requirements.txt \
-    && while read line; do $line; done < custom.txt
+WORKDIR .polyglot/nodeservers/nuvo-polyglot/profile/
+RUN zip -r ../profile.zip *
+# Run Polyglot
+WORKDIR /opt/polyglot-v2/
+CMD npm start
 
-RUN wget https://github.com/UniversalDevicesInc/Polyglot/raw/unstable-release/bin/${binfile} -P Polyglot \
-    && chown -R ${user}:${group} /home/${user} \
-    && chmod 755 /home/${user}/Polyglot/${binfile}
 
-USER ${user}
-WORKDIR /home/${user}/Polyglot
-ENTRYPOINT ["./polyglot.linux.armv7l.pyz", "-v"]

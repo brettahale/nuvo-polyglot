@@ -1,0 +1,8 @@
+#!/bin/bash
+POLYDIR=$HOME/.polyglot/nodeservers/nuvo_polyglot/
+rm profile.zip
+cd polyglot/profile/
+zip -r profile.zip *
+mv profile.zip $POLYDIR
+cp -R profile/* $POLYDIR
+cp -R src/nuvo_polyglot/* $POLYDIR

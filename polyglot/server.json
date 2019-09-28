@@ -1,0 +1,21 @@
+{
+  "name": "Nuvo Polyglot",
+  "docs": "http://www.layerspark.com/nuvo-polyglot",
+  "type": "python3",
+  "executable": "nuvo_poly.py",
+  "install": "install.py",
+  "shortPoll": "30",
+  "longPoll": "600",
+  "description": "Connect Nuvo Audio Controller to the ISY994.",
+  "notice": "Use at your own risk -- consider this experimental",
+  "credits": [
+    {
+      "title": "polylifx: A Python library for Nuvo Essentia",
+      "author": "Brett Hale",
+      "version": "0.0.1",
+      "date": "September 23, 2019",
+      "source": "https://github.com/bretthale/nuvo-essentia-nodeserver",
+      "license": "https://github.com/bretthale/nuvo-essentia-nodeserver/blob/master/LICENSE"
+    }
+  ]
+}

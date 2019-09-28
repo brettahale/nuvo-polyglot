@@ -1,1 +1,4 @@
-pyaml     >= 15.8.2
+pyaml               >= 15.8.2
+python-dotenv       == 0.1.0
+markdown2           ==2.3.8
+paho-mqtt
