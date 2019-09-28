@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Python Interface for UDI Polyglot v2 NodeServers
 by Einstein.42 (James Milne) milne.james@gmail.com
@@ -69,28 +69,27 @@ if PY2:
 else:
     string_types = str
 
+class LoggerWriter():
+    def __init__(self, level):
+        self.level = level
+
+    def write(self, message):
+        if isinstance(message, string_types):
+            # It's a string !!
+            if not re.match(r'^\s*$', message):
+                self.level(message.strip())
+        else:
+            self.level('ERROR: message was not a string: {}'.format(message))
+
+    def flush(self):
+        pass
+
 class PolyInterface:
 
 
-    class LoggerWriter(object):
-        def __init__(self, level):
-            self.level = level
-
-        def write(self, message):
-            if isinstance(message, string_types):
-                # It's a string !!
-                if not re.match(r'^\s*$', message):
-                    self.level(message.strip())
-            else:
-                self.level('ERROR: message was not a string: {}'.format(message))
-
-        def flush(self):
-            pass
-
-
     def __init__(self):
-        sys.stdout = self.LoggerWriter(LOGGER.debug)
-        sys.stderr = self.LoggerWriter(LOGGER.error)
+        sys.stdout = LoggerWriter(LOGGER.debug)
+        sys.stderr = LoggerWriter(LOGGER.error)
 
         """
         Grab the ~/.polyglot/.env file for variables
