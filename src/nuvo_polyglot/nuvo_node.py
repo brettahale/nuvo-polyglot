@@ -1,4 +1,4 @@
-from .poly_interface import Node, LOGGER
+from poly_interface import Node, LOGGER
 import re
 
 class ZoneNode(Node):
@@ -34,7 +34,7 @@ class ZoneNode(Node):
 
     def parse_status(self, response):
 
-        res = response.decode()
+        res = response
         if res == "#?":
             return False
 

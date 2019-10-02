@@ -1,6 +1,6 @@
-from .poly_interface import Controller as PolyController, LOGGER
-from .nuvo_node import ZoneNode
-from .global_cache import GlobalCache
+from poly_interface import Controller as PolyController, LOGGER
+from nuvo_node import ZoneNode
+from global_cache import GlobalCache
 
 
 class Controller(PolyController):
@@ -63,8 +63,7 @@ class Controller(PolyController):
         or longPoll. No need to Super this method the parent version does nothing.
         The timer can be overriden in the server.json.
         """
-        for node in self.nodes:
-            self.nodes[node].query()
+        pass
 
     def longPoll(self):
         """
@@ -73,8 +72,7 @@ class Controller(PolyController):
         or shortPoll. No need to Super this method the parent version does nothing.
         The timer can be overriden in the server.json.
         """
-        for node in self.nodes:
-            self.nodes[node].query()
+        pass
 
     def query(self):
         """
@@ -113,8 +111,9 @@ class Controller(PolyController):
     def process_config(self, config):
         # this seems to get called twice for every change, why?
         # What does config represent?
-        LOGGER.info("process_config: Enter config={}".format(config))
-        LOGGER.info("process_config: Exit")
+        # LOGGER.info("process_config: Enter config={}".format(config))
+        # LOGGER.info("process_config: Exit")
+        pass
 
     def _all_on(self, *args):
         for node in self.nodes:

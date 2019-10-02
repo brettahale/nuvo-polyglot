@@ -1,6 +1,6 @@
 # Nuvo Polyglot
 
- This node server supports the Nuvo Audio Controller connected via a GlobalCache deivce. The Global Cache client is gc_client.py and you could easily substitute a new client. The client just needs a method client.msg to receive the serial command to be sent to the Global Cache device.
+ This node server supports the Nuvo Audio Controller connected via a GlobalCache deivce. The Global Cache client is global_cache.py and you could easily substitute a new client. The client just needs a method client.msg to receive the serial command to be sent to the Global Cache device.
 
 ## Prepare package
 
