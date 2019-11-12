@@ -25,51 +25,19 @@ import select
 from threading import Thread
 import warnings
 import time
-
-def warning_on_one_line(message, category, filename, lineno, file=None, line=None):
-    return '{}:{}: {}: {}'.format(filename, lineno, category.__name__, message)
-
-def setup_log():
-    # Log Location
-    # path = os.path.dirname(sys.argv[0])
-    if not os.path.exists('./logs'):
-        os.makedirs('./logs')
-    log_filename = "./logs/debug.log"
-    log_level = logging.DEBUG  # Could be e.g. "DEBUG" or "WARNING"
-    # ### Logging Section ################################################################################
-    logging.captureWarnings(True)
-    logger = logging.getLogger(__name__)
-    logger.propagate = False
-    warnlog = logging.getLogger('py.warnings')
-    warnings.formatwarning = warning_on_one_line
-    logger.setLevel(log_level)
-    # Set the log level to LOG_LEVEL
-    # Make a handler that writes to a file,
-    # making a new file at midnight and keeping 3 backups
-    handler = logging.handlers.TimedRotatingFileHandler(log_filename, when="midnight", backupCount=30)
-    # Format each log message like this
-    formatter = logging.Formatter('%(asctime)s [%(threadName)-10s] [%(levelname)-5s] %(message)s')
-    # Attach the formatter to the handler
-    handler.setFormatter(formatter)
-    # Attach the handler to the logger
-    logger.addHandler(handler)
-    warnlog.addHandler(handler)
-    return logger
-
-LOGGER = setup_log()
-
-def unload_interface(self):
-    sys.stdout = sys.__stdout__
-    sys.stderr = sys.__stderr__
-    LOGGER.handlers = []
+import netifaces
 
 PY2 = sys.version_info[0] == 2
+
 if PY2:
     string_types = basestring
 else:
     string_types = str
 
-class LoggerWriter():
+def warning_on_one_line(message, category, filename, lineno, file=None, line=None):
+    return '{}:{}: {}: {}'.format(filename, lineno, category.__name__, message)
+
+class LoggerWriter(object):
     def __init__(self, level):
         self.level = level
 
@@ -84,49 +52,84 @@ class LoggerWriter():
     def flush(self):
         pass
 
-class PolyInterface:
+
+def setup_log():
+    # Log Location
+    # path = os.path.dirname(sys.argv[0])
+    if not os.path.exists('./logs'):
+        os.makedirs('./logs')
+    log_filename = "./logs/debug.log"
+    log_level = logging.DEBUG  # Could be e.g. "DEBUG" or "WARNING"
+
+    # ### Logging Section ################################################################################
+    logging.captureWarnings(True)
+    logger = logging.getLogger(__name__)
+    logger.propagate = False
+    warnlog = logging.getLogger('py.warnings')
+    warnings.formatwarning = warning_on_one_line
+    logger.setLevel(log_level)
+    # Set the log level to LOG_LEVEL
+    # Make a handler that writes to a file,
+    # making a new file at midnight and keeping 3 backups
+    handler = logging.handlers.TimedRotatingFileHandler(log_filename, when="midnight", backupCount=3)
+    # Format each log message like this
+    formatter = logging.Formatter('%(asctime)s [%(threadName)-10s] [%(levelname)-5s] %(message)s')
+    # Attach the formatter to the handler
+    handler.setFormatter(formatter)
+    # Attach the handler to the logger
+    logger.addHandler(handler)
+    warnlog.addHandler(handler)
+    return logger
+
+LOGGER = setup_log()
 
 
-    def __init__(self):
-        sys.stdout = LoggerWriter(LOGGER.debug)
-        sys.stderr = LoggerWriter(LOGGER.error)
+def init_interface():
+    sys.stdout = LoggerWriter(LOGGER.debug)
+    sys.stderr = LoggerWriter(LOGGER.error)
 
-        """
-        Grab the ~/.polyglot/.env file for variables
-        If you are running Polyglot v2 on this same machine
-        then it should already exist. If not create it.
-        """
-        warnings.simplefilter('error', UserWarning)
+    """
+    Grab the ~/.polyglot/.env file for variables
+    If you are running Polyglot v2 on this same machine
+    then it should already exist. If not create it.
+    """
+    warnings.simplefilter('error', UserWarning)
+    try:
+        load_dotenv(join(expanduser("~") + '/.polyglot/.env'))
+    except (UserWarning) as err:
+        LOGGER.warning('File does not exist: {}.'.format(join(expanduser("~") + '/.polyglot/.env')), exc_info=True)
+        # sys.exit(1)
+    warnings.resetwarnings()
+
+    """
+    If this NodeServer is co-resident with Polyglot it will receive a STDIN config on startup
+    that looks like:
+    {"token":"2cb40e507253fc8f4cbbe247089b28db79d859cbed700ec151",
+    "mqttHost":"localhost","mqttPort":"1883","profileNum":"10"}
+    """
+
+    init = select.select([sys.stdin], [], [], 1)[0]
+    if init:
+        line = sys.stdin.readline()
         try:
-            load_dotenv(join(expanduser("~") + '/.polyglot/.env'))
-        except (UserWarning) as err:
-            LOGGER.warning('File does not exist: {}.'.format(join(expanduser("~") + '/.polyglot/.env')), exc_info=True)
-            # sys.exit(1)
-        warnings.resetwarnings()
-
-        """
-        If this NodeServer is co-resident with Polyglot it will receive a STDIN config on startup
-        that looks like:
-        {"token":"2cb40e507253fc8f4cbbe247089b28db79d859cbed700ec151",
-        "mqttHost":"localhost","mqttPort":"1883","profileNum":"10"}
-        """
-
-        init = select.select([sys.stdin], [], [], 1)[0]
-        if init:
-            line = sys.stdin.readline()
-            try:
-                line = json.loads(line)
-                os.environ['PROFILE_NUM'] = line['profileNum']
-                os.environ['MQTT_HOST'] = line['mqttHost']
-                os.environ['MQTT_PORT'] = line['mqttPort']
-                os.environ['TOKEN'] = line['token']
-                LOGGER.info('Received Config from STDIN.')
-            except (Exception) as err:
-                # e = sys.exc_info()[0]
-                LOGGER.error('Invalid formatted input. Skipping. %s', err, exc_info=True)
+            line = json.loads(line)
+            os.environ['PROFILE_NUM'] = line['profileNum']
+            os.environ['MQTT_HOST'] = line['mqttHost']
+            os.environ['MQTT_PORT'] = line['mqttPort']
+            os.environ['TOKEN'] = line['token']
+            LOGGER.info('Received Config from STDIN.')
+        except (Exception) as err:
+            # e = sys.exc_info()[0]
+            LOGGER.error('Invalid formatted input. Skipping. %s', err, exc_info=True)
 
 
-class Interface():
+def unload_interface():
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+    LOGGER.handlers = []
+
+
+class Interface(object):
 
     CUSTOM_CONFIG_DOCS_FILE_NAME = 'POLYGLOT_CONFIG.md'
 
@@ -144,6 +147,7 @@ class Interface():
         if self.__exists:
             warnings.warn('Only one Interface is allowed.')
             return
+        init_interface()
         self.connected = False
         self.profileNum = os.environ.get("PROFILE_NUM")
         if self.profileNum is None:
@@ -199,6 +203,11 @@ class Interface():
         Interface.__exists = True
         self.custom_params_docs_file_sent = False
         self.custom_params_pending_docs = ''
+        try:
+            self.network_interface = self.get_network_interface()
+            LOGGER.info('Connect: Network Interface: {}'.format(self.network_interface))
+        except:
+            LOGGER.error('Failed to determine Network Interface', exc_info=True)
 
     def onConfig(self, callback):
         """
@@ -557,8 +566,25 @@ class Interface():
         message = { 'typedparams': data }
         self.send(message)
 
+    """
+        Returns the network interface which contains addr, broadcasts, and netmask elements
+    """
+    def get_network_interface(self,interface='default'):
+        # Get the default gateway
+        gws = netifaces.gateways()
+        LOGGER.debug("gws: {}".format(gws))
+        rt = False
+        if interface in gws:
+            gwd = gws[interface][netifaces.AF_INET]
+            LOGGER.debug("gw: {}={}".format(interface,gwd))
+            ifad = netifaces.ifaddresses(gwd[1])
+            rt = ifad[netifaces.AF_INET]
+            LOGGER.debug("ifad: {}={}".format(gwd[1],rt))
+            return rt[0]
+        LOGGER.error("No {} in gateways:{}".format(interface,gws))
+        return {'addr': False, 'broadcast': False, 'netmask': False}
 
-class Node():
+class Node(object):
     """
     Node Class for individual devices.
     """
@@ -691,7 +717,7 @@ class Node():
 
 class Controller(Node):
     """
-    Controller Class for controller management. Subclass of Node
+    Controller Class for controller management. Superclass of Node
     """
     __exists = False
 
@@ -724,7 +750,6 @@ class Controller(Node):
             self.nodesAdding = []
             # self._threads = []
             self._startThreads()
-            super(Controller, self).__init__(self, self.primary, self.address, self.name)
         except (KeyError) as err:
             LOGGER.error('Error Creating node: {}'.format(err), exc_info=True)
 

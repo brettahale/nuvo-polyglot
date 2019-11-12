@@ -1,12 +1,18 @@
 #!/usr/bin/env python
+import os
 import sys
-from .poly_interface import LOGGER, PolyInterface, Interface
-from .nuvo_controller import Controller
+import polyinterface
+from nuvo_factory import nuvo_factory
+import concerto
+import essentia
+from dotenv import load_dotenv
 
 if __name__ == "__main__":
+    load_dotenv('./.env')
 
-    polyinterface = PolyInterface()
-    polyglot = Interface('Nuvo Essentia Polyglot')
+    device_type = os.getenv('NUVO_DEVICE').lower()
+    polyglot = polyinterface.Interface('Nuvo {} Polyglot'.format(device_type))
+    Controller = nuvo_factory.get_controller(device_type.upper())
 
     try:
         polyglot.start()
