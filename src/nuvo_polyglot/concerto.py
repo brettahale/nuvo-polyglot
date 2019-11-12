@@ -94,7 +94,7 @@ class ConcertoController(polyinterface.Controller):
         """
         for x in range(1,7):
             name = "Zone {}".format(str(x))
-            address = "z0{0}".format(str(x))
+            address = "Z{0}".format(str(x))
             LOGGER.info("Adding {} {} and client".format(name,address))
             gc = GlobalCache(self.host, self.port, 10)
             self.addNode(ConcertoNode(self, self.address, address, name, gc))
@@ -119,14 +119,10 @@ class ConcertoController(polyinterface.Controller):
         pass
 
     def _all_on(self, *args):
-        for node in self.nodes:
-            if node != self.address:
-                self.nodes[node]._on(args)
+        pass
 
     def _all_off(self, *args):
-        for node in self.nodes:
-            if node != self.address:
-                self.nodes[node]._off(args)
+        self._send_cmd("*{0}ALLOFF".format(self.address))
 
     def check_params(self):
         """
@@ -157,7 +153,7 @@ class ConcertoController(polyinterface.Controller):
     The id must match the nodeDef id="controller"
     In the nodedefs.xml
     """
-    id = 'nuvoe6dms'
+    id = 'nuvoi8gm'
     commands = {
         'ALLON':_all_on,
         'ALLOFF': _all_off
@@ -201,21 +197,21 @@ class ConcertoNode(polyinterface.Node):
             if res == "#?":
                 return False
 
-            # Examples: `#Z01PWRON,SRC2,GRP0,VOL-62,POFF | #Z01PWROFF`
-            # Match Groups: 0-All, 1- PWR ON/OFF, 2- SRC [1-6],GRP [0-6],VOL int, P ON/OFF
-            pat = re.compile("^#Z0[0-9]PWR(ON|OFF)(?:,SRC([0-9]),GRP([0-9]),VOL[-]?([0-9MT]+),P(ON|OFF))?")
+            # Examples: `#Z3,ON,SRC1,VOL44,DND0,LOCK0 | #Z1OFF`
+            # Match Groups: 0-All, 1- PWR ON/OFF, 2- SRC [1-6],3- VOL int, 4- DND 0/1, 5- LOCK 0/1
+            pat = re.compile("^#Z[0-9],(ON|OFF)(?:,SRC([0-9]),VOL[-]?([0-9MUTE]+),DND(0|1),LOCK(0|1))?")
             m = re.match(pat,res)
 
             status = {}
             status['ST'] = 0 if m.group(1) == 'OFF' else 1
 
             if status['ST'] == 1:
-                status['GV1'] = int(m.group(3)) #group
-                status['GV2'] = 1 if m.group(4) and m.group(4) == "MT" else 0 #mute
+                status['GV1'] = 0 #group not used for concerto
+                status['GV2'] = 1 if m.group(3) and m.group(3) == "MUTE" else 0 #mute
                 status['GV3'] = int(m.group(2)) #source
 
             if status['ST'] == 1 and status['GV2'] == 0:
-                status['GV4'] = self.normalize_volume(int(m.group(4))) #volume
+                status['GV4'] = self.normalize_volume(int(m.group(3))) #volume
 
             return status
         except Exception as e:
@@ -243,11 +239,7 @@ class ConcertoNode(polyinterface.Node):
         return self._send_cmd("*{0}OFF".format(self.address))
 
     def _group(self, *args):
-        group = args[0]['value']
-        if group:
-            return self._send_cmd("*{0}GRP{1}".format(self.address, str(group)))
-        else:
-            return False
+        pass
 
     def _source(self, *args):
         source = args[0]['value']
@@ -259,9 +251,9 @@ class ConcertoNode(polyinterface.Node):
     def _mute(self, *args):
         mute_on = self.status['GV2']
         if int(mute_on) == 1:
-            return self._send_cmd("*{0}MT{1}".format(self.address, "ON"))
+            return self._send_cmd("*{0}MUTE{1}".format(self.address, "ON"))
         elif int(mute_on) == 0:
-            return self._send_cmd("*{0}MT{1}".format(self.address, "OFF"))
+            return self._send_cmd("*{0}MUTE{1}".format(self.address, "OFF"))
         else:
             return False
 
@@ -284,7 +276,7 @@ class ConcertoNode(polyinterface.Node):
             return False
 
     def query(self, **kwargs):
-        self._send_cmd("*{0}CONSR".format(self.address))
+        self._send_cmd("*{0}STATUS?".format(self.address))
 
     drivers = [
         {'driver': 'ST' , 'value': 0, 'uom': 2}, # st
